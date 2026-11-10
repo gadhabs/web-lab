@@ -1,0 +1,355 @@
+<html>
+<head>
+<title>Online Examination System</title>
+<style>
+{
+    box-sizing: border-box;
+}
+
+body 
+{
+    font-family: Arial, sans-serif;
+    background: #eef2f7;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 850px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px #ccc;
+}
+
+h1 {
+    text-align: center;
+    color: #174ea6;
+}
+
+input {
+    padding: 12px;
+    width: 100%;
+    margin: 10px 0;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+}
+
+button {
+    padding: 11px 18px;
+    border: none;
+    background: #1769aa;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+}
+
+button:hover {
+    background: #084b80;
+}
+
+.timer {
+    text-align: right;
+    font-size: 20px;
+    color: red;
+    font-weight: bold;
+}
+
+.option {
+    display: block;
+    padding: 12px;
+    margin: 10px 0;
+    background: #f1f4f9;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.option:hover {
+    background: #dceaff;
+}
+
+.navigation {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+#result {
+    text-align: center;
+    font-size: 20px;
+    color: green;
+}
+
+.hidden {
+    display: none;
+}
+
+#questionNumbers button {
+    width: 40px;
+    height: 40px;
+    padding: 5px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+<h1>Online Examination System</h1>
+<div id="login">
+    <h3>Student Details</h3>
+    <input type="text" id="studentName"name="Enter Student Name">
+    <button onclick="startExam()">Start Exam</button>
+</div>
+<div id="exam" class="hidden">
+
+    <div class="timer">
+        Time Left: <span id="time">30:00</span>
+    </div>
+
+    <hr>
+
+    <h3 id="question"></h3>
+
+    <div id="options"></div>
+
+    <div class="navigation">
+        <button onclick="previousQuestion()">Previous</button>
+        <button onclick="nextQuestion()">Next</button>
+    </div>
+
+    <h3>Question Navigation</h3>
+    <div id="questionNumbers"></div>
+
+    <br>
+    <button onclick="submitExam()">Submit Exam</button>
+
+</div>
+<div id="resultSection" class="hidden">
+    <h2>Exam Result</h2>
+    <div id="result"></div>
+    <button onclick="location.reload()">Restart Exam</button>
+</div>
+
+</div>
+
+<script>
+
+// Questions
+const questions = [
+{
+    question: "1. Which language is used for web page structure?",
+    options: ["Python", "HTML", "Java", "C++"],
+    answer: 1
+},
+{
+    question: "2. Which language is used for web page styling?",
+    options: ["HTML", "CSS", "PHP", "C"],
+    answer: 1
+},
+{
+    question: "3. Which language makes web pages interactive?",
+    options: ["JavaScript", "HTML", "SQL", "XML"],
+    answer: 0
+},
+{
+    question: "4. What does CSS stand for?",
+    options: [
+        "Computer Style Sheets",
+        "Creative Style System",
+        "Cascading Style Sheets",
+        "Colorful Style Sheets"
+    ],
+    answer: 2
+},
+{
+    question: "5. Which symbol is used for comments in JavaScript?",
+    options: ["//", "#", "<!-- -->", "**"],
+    answer: 0
+}
+];
+
+let currentQuestion = 0;
+let answers = {};
+let timeLeft = 30 * 60;
+let timerInterval;
+
+function startExam() {
+
+    let name = document.getElementById("studentName").value;
+
+    if (name.trim() === "") {
+        alert("Please enter your name!");
+        return;
+    }
+
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("exam").classList.remove("hidden");
+
+    showQuestion();
+    createNavigation();
+
+    timerInterval = setInterval(function() {
+
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+
+        document.getElementById("time").innerText =
+            minutes + ":" + String(seconds).padStart(2, "0");
+
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            alert("Time is over!");
+            submitExam();
+        }
+
+        timeLeft--;
+
+    }, 1000);
+}
+
+// Display Question
+function showQuestion() {
+
+    let q = questions[currentQuestion];
+
+    document.getElementById("question").innerText =
+        q.question;
+
+    let optionsHTML = "";
+
+    q.options.forEach(function(option, index) {
+
+        let checked =
+            answers[currentQuestion] === index ? "checked" : "";
+
+        optionsHTML += `
+        <label class="option">
+            <input type="radio"
+                name="answer"
+                value="${index}"
+                ${checked}
+                onchange="saveAnswer(${index})"
+                style="width:auto">
+            ${option}
+        </label>`;
+    });
+
+    document.getElementById("options").innerHTML =
+        optionsHTML;
+
+    updateNavigation();
+}
+
+// Save Answer
+function saveAnswer(index) {
+    answers[currentQuestion] = index;
+    updateNavigation();
+}
+
+// Next Question
+function nextQuestion() {
+
+    if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        showQuestion();
+    }
+}
+
+// Previous Question
+function previousQuestion() {
+
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        showQuestion();
+    }
+}
+
+// Question Navigation
+function createNavigation() {
+
+    let html = "";
+
+    questions.forEach(function(q, index) {
+
+        html += `
+        <button onclick="goToQuestion(${index})"
+            id="nav${index}">
+            ${index + 1}
+        </button>`;
+    });
+
+    document.getElementById("questionNumbers").innerHTML =
+        html;
+}
+
+function goToQuestion(index) {
+    currentQuestion = index;
+    showQuestion();
+}
+
+function updateNavigation() {
+
+    questions.forEach(function(q, index) {
+
+        let btn = document.getElementById("nav" + index);
+
+        if (btn) {
+            btn.style.background =
+                answers[index] !== undefined ? "green" : "#1769aa";
+        }
+    });
+}
+
+// Submit Exam
+function submitExam() {
+
+    if (document.getElementById("exam").classList.contains("hidden")) {
+        return;
+    }
+
+    if (!confirm("Are you sure you want to submit the exam?")) {
+        return;
+    }
+
+    clearInterval(timerInterval);
+
+    let score = 0;
+
+    questions.forEach(function(q, index) {
+
+        if (answers[index] === q.answer) {
+            score++;
+        }
+    });
+
+    let percentage =
+        (score / questions.length) * 100;
+
+    document.getElementById("exam").classList.add("hidden");
+
+    document.getElementById("resultSection")
+        .classList.remove("hidden");
+
+    document.getElementById("result").innerHTML = `
+        <h3>Student: ${
+            document.getElementById("studentName").value
+        }</h3>
+
+        <p>Total Questions: ${questions.length}</p>
+
+        <p>Correct Answers: ${score}</p>
+
+        <p>Wrong / Unanswered: ${questions.length - score}</p>
+
+        <p>Percentage: ${percentage.toFixed(2)}%</p>
+
+        <h2>${percentage >= 40 ? "PASS" : "FAIL"}</h2>
+    `;
+}
+
+</script>
+
+</body>
+</html>

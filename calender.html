@@ -1,0 +1,138 @@
+<html>
+<head>
+    <title>Simple Calendar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+            background: #f2f2f2;
+        }
+
+        .calendar {
+            width: 320px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #aaa;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        button {
+            padding: 8px 12px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            gap: 5px;
+            margin-top: 15px;
+        }
+
+        .days div {
+            padding: 10px 0;
+        }
+
+        .day-name {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .today {
+            background: #007bff;
+            color: white;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="calendar">
+    <div class="header">
+        <button onclick="prevMonth()">❮</button>
+        <h3 id="monthYear"></h3>
+        <button onclick="nextMonth()">❯</button>
+    </div>
+
+    <div class="days" id="calendar"></div>
+</div>
+
+<script>
+    let date = new Date();
+
+    function displayCalendar() {
+        let year = date.getFullYear();
+        let month = date.getMonth();
+
+        let firstDay = new Date(year, month, 1).getDay();
+        let lastDate = new Date(year, month + 1, 0).getDate();
+
+        document.getElementById("monthYear").innerHTML =
+            date.toLocaleString("default", {
+                month: "long",
+                year: "numeric"
+            });
+
+        let calendar = document.getElementById("calendar");
+        calendar.innerHTML = "";
+
+        let dayNames = ["Sun", "Mon", "Tue",
+                        "Wed", "Thu", "Fri", "Sat"];
+
+        dayNames.forEach(day => {
+            let div = document.createElement("div");
+            div.className = "day-name";
+            div.innerText = day;
+            calendar.appendChild(div);
+        });
+
+        for (let i = 0; i < firstDay; i++) {
+            calendar.appendChild(document.createElement("div"));
+        }
+
+        for (let day = 1; day <= lastDate; day++) {
+            let div = document.createElement("div");
+            div.innerText = day;
+
+            let today = new Date();
+
+            if (
+                day === today.getDate() &&
+                month === today.getMonth() &&
+                year === today.getFullYear()
+            ) {
+                div.classList.add("today");
+            }
+
+            calendar.appendChild(div);
+        }
+    }
+
+    function prevMonth() {
+        date.setMonth(date.getMonth() - 1);
+        displayCalendar();
+    }
+
+    function nextMonth() {
+        date.setMonth(date.getMonth() + 1);
+        displayCalendar();
+    }
+
+    displayCalendar();
+</script>
+
+</body>
+</html>
